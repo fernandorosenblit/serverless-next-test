@@ -1,0 +1,2 @@
+serverlessNextTest:
+  component: "@sls-next/serverless-component"
