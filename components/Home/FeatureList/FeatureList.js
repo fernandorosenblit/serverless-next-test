@@ -2,18 +2,13 @@ import styles from "styles/FeatureList.module.scss";
 
 const FeatureList = ({ movies }) => {
 	return (
-		<div>
+		<ul className={styles.featuredList}>
 			{movies.map((movie) => (
-				<div key={movie?.attributes?.image?.urlAltText}>
-					<img
-						className={styles.movie}
-						src={movie?.attributes?.image?.url}
-						alt={movie?.attributes?.image?.urlAltText}
-					/>
-					<p>{movie?.attributes?.image?.urlAltText}</p>
-				</div>
+				<li key={movie.attributes.name}>
+					{movie.id} - {movie.attributes.displayName}
+				</li>
 			))}
-		</div>
+		</ul>
 	);
 };
 
