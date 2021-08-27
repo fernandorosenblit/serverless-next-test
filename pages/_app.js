@@ -1,5 +1,6 @@
 import { Provider } from "react-redux";
 import { useStore } from "state/store";
+import Link from "next/link";
 
 import "styles/globals.scss";
 
@@ -8,7 +9,20 @@ function MyApp({ Component, pageProps }) {
 
 	return (
 		<Provider store={store}>
-			<Component {...pageProps} />
+			<nav>
+				<Link activeClassName="active" href="/">
+					Static Generation without data
+				</Link>
+				<Link activeClassName="active" href="/sgd">
+					Static Generation with data
+				</Link>
+				<Link activeClassName="active" href="/ssr">
+					Server-side Rendering
+				</Link>
+			</nav>
+			<div className="layout">
+				<Component {...pageProps} />
+			</div>
 		</Provider>
 	);
 }
