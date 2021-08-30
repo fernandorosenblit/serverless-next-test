@@ -1,4 +1,5 @@
 import { combineReducers } from "redux";
+import api from './reducers/apiReducer';
 
 const initialState = {
 	isLoading: false,
@@ -11,6 +12,6 @@ const appReducer = (state = initialState, action) => {
 	}
 };
 
-const reducers = { appReducer };
+const reducers = { appReducer, api };
 
 export default combineReducers(reducers);

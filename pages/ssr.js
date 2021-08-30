@@ -1,16 +1,40 @@
 import httpClient from "httpClient";
-import List from "components/Home/List";
+import { useSelector } from "react-redux";
 
+import List from "components/Home/List";
+import { initializeStore } from "state/store";
+import getLinks from 'utils/getLinks';
+import queryBuilder from 'utils/queryBuilder';
+import executeRequest from 'utils/executeRequest';
 import styles from "styles/Home.module.scss";
 
-function Home({ movie, ratingType, genre, featureList, ip, geoLoc }) {
+function Home({ ip, geoLoc }) {
+	const movies = [];
+	const ratingTypes = [];
+	const genres = [];
+	const featureListAux = [];
+	const apiReducer = useSelector(store => store.api);
+	const { movie, ratingType, genre, featureList } = useSelector(store => store.api);
+	Object.keys(movie).forEach((key => {
+    movies.push(movie[key]);
+	}));
+	Object.keys(ratingType).forEach((key => {
+    ratingTypes.push(ratingType[key]);
+	}));
+	Object.keys(genre).forEach((key => {
+    genres.push(genre[key]);
+	}));
+	Object.keys(featureList).forEach((key => {
+    featureListAux.push(featureList[key]);
+	}));
+
 	return (
 		<div className={styles.container}>
 			<div className="container">
-				<List title="Movie" data={movie} />
-				<List title="Rating type" data={ratingType} />
-				<List title="Genre" data={genre} />
-				<List title="Feature List" data={featureList} />
+				<List title="Movie" data={movies} />
+				<List title="Rating type" data={ratingTypes} />
+				<List title="Genre" data={genres} />
+				<List title="Feature List" data={featureListAux} />
 				<div>
 					<h4>IP</h4>
 					<p>{ip}</p>
@@ -26,56 +50,57 @@ function Home({ movie, ratingType, genre, featureList, ip, geoLoc }) {
 export default Home;
 
 export async function getServerSideProps(context) {
-	const homeUrl = process.env.API_URL;
-	const {
-		data: {
-			data: { links },
+	const links = await getLinks();
+  const reduxStore = initializeStore()
+	const { dispatch } = reduxStore;
+
+	const movieQuery = queryBuilder({
+		pagination: {
+			number: 2,
+			size: 20
+		}
+	});
+
+	const featureQuery = queryBuilder({
+		filter: {
+			name: {
+				eq: 'home-carousel'
+			}
 		},
-	} = await httpClient(homeUrl);
-
-	const mainLink = links[context.locale];
-	const {
-		data: {
-			data: { links: serviceLinks },
-		},
-	} = await httpClient(mainLink);
-
-	const {
-		data: { data: movie },
-	} = await httpClient(
-		`${serviceLinks?.movie}?page%5Bnumber%5D=2&page%5Bsize%5D=20`
-	);
-
-	const {
-		data: { data: ratingType },
-	} = await httpClient(serviceLinks.ratingType);
-
-	const {
-		data: { data: genre },
-	} = await httpClient(serviceLinks.genre);
-
-	const {
-		data: { data: featureList },
-	} = await httpClient(
-		`${serviceLinks.featureList}?filter=name%20eq%20%27home-carousel%27&include=items.imageContent,items.actions.items `
-	);
+		include: [
+			'items.imageContent', 
+			'items.actions.items',
+		]
+	});
 
 	const ip = context?.req?.headers?.["x-forwarded-for"] ?? "0.0.0.0";
+
+	const geoQuery = queryBuilder({
+		geoSearch: {
+			ip,
+			minRadius: 16100,
+			maxRadius: 40234
+		}
+	});
+
 
 	const {
 		data: { data: geoLoc },
 	} = await httpClient(
-		`${serviceLinks.geoLocationSearch}?geoSearch[ip]='${ip}'&geoSearch[minRadius]=16100&geoSearch[maxRadius]=40234`
+		`${links.geoLocationSearch}${geoQuery}`
 	);
+
+	await Promise.all(
+		[
+			executeRequest(dispatch, links.ratingType), 
+			executeRequest(dispatch, links.genre), 
+			executeRequest(dispatch, `${links?.movie}${movieQuery}`), 
+			executeRequest(dispatch, `${links?.featureList}${featureQuery}`), 
+	])
 
 	return {
 		props: {
-			mainLink,
-			serviceLinks,
-			movie,
-			ratingType,
-			genre,
-			featureList,
+			initialReduxState: reduxStore.getState(),
 			ip,
 			geoLoc,
 		},

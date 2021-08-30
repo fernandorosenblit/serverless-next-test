@@ -1,16 +1,46 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
-
 import httpClient from "httpClient";
+import { useSelector } from "react-redux";
+
+
+import { initializeStore } from "state/store";
+import getLinks from 'utils/getLinks';
 import List from "components/Home/List";
+import queryBuilder from 'utils/queryBuilder';
+import executeRequest from 'utils/executeRequest';
+import { RELS } from 'constants/entityRels';
 
 import bg from "assets/concierge-background.png";
 import styles from "styles/Home.module.scss";
 
+const {
+	featuredList,
+	featureImageContent
+} = RELS;
+
 const corsHost = process.env.CORS_HOST || "localhost";
 const corsPort = process.env.CORS_PORT || 8080;
 
-function Home({ serviceLinks, movie, ratingType, genre, featureList }) {
+function Home({ links }) {
+	const movies = [];
+	const ratingTypes = [];
+	const genres = [];
+	const featureListAux = [];
+	const apiReducer = useSelector(store => store.api);
+	const { movie, ratingType, genre, featureList } = useSelector(store => store.api);
+	Object.keys(movie).forEach((key => {
+    movies.push(movie[key]);
+	}));
+	Object.keys(ratingType).forEach((key => {
+    ratingTypes.push(ratingType[key]);
+	}));
+	Object.keys(genre).forEach((key => {
+    genres.push(genre[key]);
+	}));
+	Object.keys(featureList).forEach((key => {
+    featureListAux.push(featureList[key]);
+  }));
 	const [clientMovies, setClientMovies] = useState([]);
 	const [ip, setIp] = useState(null);
 	const [geoLoc, setGeoLoc] = useState(null);
@@ -18,7 +48,7 @@ function Home({ serviceLinks, movie, ratingType, genre, featureList }) {
 	const getMovies = async () => {
 		try {
 			const { data } = await httpClient(
-				`http://${corsHost}:${corsPort}/${serviceLinks?.movie}?page%5Bnumber%5D=2&page%5Bsize%5D=10`
+				`http://${corsHost}:${corsPort}/${links?.movie}?page%5Bnumber%5D=2&page%5Bsize%5D=10`
 			);
 			setClientMovies(data.data);
 		} catch (error) {
@@ -45,7 +75,7 @@ function Home({ serviceLinks, movie, ratingType, genre, featureList }) {
 			const {
 				data: { data },
 			} = await httpClient(
-				`http://${corsHost}:${corsPort}/${serviceLinks.geoLocationSearch}?geoSearch[ip]='${_ip}'&geoSearch[minRadius]=16100&geoSearch[maxRadius]=40234`
+				`http://${corsHost}:${corsPort}/${links.geoLocationSearch}?geoSearch[ip]='${_ip}'&geoSearch[minRadius]=16100&geoSearch[maxRadius]=40234`
 			);
 			setGeoLoc(data);
 		} catch (error) {
@@ -69,10 +99,10 @@ function Home({ serviceLinks, movie, ratingType, genre, featureList }) {
 
 			<h2></h2>
 			<div className="container">
-				<List title="Movie" data={[...movie, ...clientMovies]} />
-				<List title="Rating type" data={ratingType} />
-				<List title="Genre" data={genre} />
-				<List title="Feature List" data={featureList} />
+				<List title="Movie" data={[...movies, ...clientMovies]} />
+				<List title="Rating type" data={ratingTypes} />
+				<List title="Genre" data={genres} />
+				<List title="Feature List" data={featureListAux} />
 				<div>
 					<h4>IP</h4>
 					<p>{ip}</p>
@@ -88,49 +118,36 @@ function Home({ serviceLinks, movie, ratingType, genre, featureList }) {
 export default Home;
 
 export async function getStaticProps({ locale }) {
-	const homeUrl = process.env.API_URL;
-	const {
-		data: {
-			data: { links },
+	const links = await getLinks();
+  const reduxStore = initializeStore()
+	const { dispatch } = reduxStore;
+
+	const movieQuery = queryBuilder({
+		pagination: {
+			number: 1,
+			size: 10
+		}
+	});
+
+	const featureQuery = queryBuilder({
+		filter: {
+			name: {
+				eq: 'home-carousel'
+			}
 		},
-	} = await httpClient(homeUrl);
+		include: [
+			'items.imageContent', 
+			'items.actions.items',
+		]
+	});
 
-	const mainLink = links[locale];
+	await Promise.all(
+		[
+			executeRequest(dispatch, links.ratingType), 
+			executeRequest(dispatch, links.genre), 
+			executeRequest(dispatch, `${links?.movie}${movieQuery}`), 
+			executeRequest(dispatch, `${links?.featureList}${featureQuery}`), 
+	])
 
-	const {
-		data: {
-			data: { links: serviceLinks },
-		},
-	} = await httpClient(mainLink);
-
-	const {
-		data: { data: movie },
-	} = await httpClient(
-		`${serviceLinks?.movie}?page%5Bnumber%5D=1&page%5Bsize%5D=10`
-	);
-
-	const {
-		data: { data: ratingType },
-	} = await httpClient(serviceLinks.ratingType);
-
-	const {
-		data: { data: genre },
-	} = await httpClient(serviceLinks.genre);
-
-	const {
-		data: { data: featureList },
-	} = await httpClient(
-		`${serviceLinks.featureList}?filter=name%20eq%20%27home-carousel%27&include=items.imageContent,items.actions.items `
-	);
-
-	return {
-		props: {
-			mainLink,
-			serviceLinks,
-			movie,
-			ratingType,
-			genre,
-			featureList,
-		},
-	};
+	return { props: { initialReduxState: reduxStore.getState(), links} };
 }
