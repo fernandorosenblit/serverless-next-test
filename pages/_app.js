@@ -1,6 +1,8 @@
 import { Provider } from "react-redux";
 import { useStore } from "state/store";
 import Link from "next/link";
+import "slick-carousel/slick/slick.css"; 
+import "slick-carousel/slick/slick-theme.css";
 
 import "styles/globals.scss";
 
