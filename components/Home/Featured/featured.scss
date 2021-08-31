@@ -1,0 +1,14 @@
+.featured {
+  margin: auto;
+  display: flex;
+  width: 100%;
+  max-width: $global-width;
+
+  .slick-list {
+    overflow: hidden;
+  }
+}
+
+.carousel-animation {
+  transition: transform 0.2s ease-out;
+}

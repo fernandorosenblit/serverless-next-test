@@ -1,0 +1,43 @@
+.featured-movie {
+  position: relative;
+
+  .featured-overlay {
+    @include gradient(0deg, $gradient-featured);
+
+    align-items: flex-end;
+    bottom: 0;
+    display: flex;
+    justify-content: space-between;
+    left: 0;
+    padding: 2.5rem 1rem;
+    position: absolute;
+    right: 0;
+    top: 30%;
+
+    .featured-movie-title {
+      font-size: 1.7rem;
+      font-weight: $global-weight-normal;
+    }
+
+    .featured-movie-info {
+      font-size: 1.3rem;
+
+      &:not(:last-child) {
+        margin-right: 1rem;
+      }
+    }
+
+    .get-tickets {
+      justify-self: flex-start;
+      min-width: fit-content;
+    }
+
+    .skeleton-info-container {
+      width: 100%;
+    }
+  }
+
+  &.skeleton {
+    @include gradient(0deg, $gradient-featured);
+  }
+}

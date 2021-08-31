@@ -2,6 +2,7 @@ import httpClient from "httpClient";
 import { useSelector } from "react-redux";
 
 import List from "components/Home/List";
+import Featured from 'components/home/Featured/Featured';
 import { initializeStore } from "state/store";
 import getLinks from 'utils/getLinks';
 import queryBuilder from 'utils/queryBuilder';
@@ -30,6 +31,7 @@ function Home({ ip, geoLoc }) {
 
 	return (
 		<div className={styles.container}>
+			<Featured />
 			<div className="container">
 				<List title="Movie" data={movies} />
 				<List title="Rating type" data={ratingTypes} />
@@ -73,6 +75,21 @@ export async function getServerSideProps(context) {
 		]
 	});
 
+	const featuredMovies = queryBuilder({
+		filter: {
+			id: {
+				in: [1155,1029,1130]
+			}
+		},
+		include: [
+			'textContent', 
+			'ragings',
+			'ratingType',
+			'genres',
+			'imageContent'
+		]
+	});
+
 	const ip = context?.req?.headers?.["x-forwarded-for"] ?? "0.0.0.0";
 
 	const geoQuery = queryBuilder({
@@ -90,11 +107,18 @@ export async function getServerSideProps(context) {
 		`${links.geoLocationSearch}${geoQuery}`
 	);
 
+	const {
+		data: featuredData,
+	} = await httpClient(
+		`${links?.featureList}${featureQuery}`
+	);
+
 	await Promise.all(
 		[
 			executeRequest(dispatch, links.ratingType), 
 			executeRequest(dispatch, links.genre), 
-			executeRequest(dispatch, `${links?.movie}${movieQuery}`), 
+			executeRequest(dispatch, `${links?.movie}${movieQuery}`),
+			executeRequest(dispatch, `https://api.inventory.dev.external.hollywood.com/en-us/movie?filter=id%20in(1155,1029,1130)&include=textContent,ratings.ratingType,genres,imageContent`), 
 			executeRequest(dispatch, `${links?.featureList}${featureQuery}`), 
 	])
 
