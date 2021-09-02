@@ -118,7 +118,7 @@ function Home({ links }) {
 export default Home;
 
 export async function getStaticProps({ locale }) {
-	const links = await getLinks();
+	const { links } = await getLinks();
   const reduxStore = initializeStore()
 	const { dispatch } = reduxStore;
 

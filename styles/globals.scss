@@ -127,3 +127,23 @@ $gradient-featured: #000000e0, #ffffff00;
     @include gradient(0deg, $gradient-featured);
   }
 }
+
+.rountrip {
+	padding: 0 .3rem;
+}
+
+.rountrip-row {
+	display: flex;
+	justify-content: space-between;
+	margin-bottom: .5rem;
+
+	&__url {
+		max-width: 60%;
+		word-wrap: break-word;
+	}
+}
+
+.rountrip-titles {
+	display: flex;
+	justify-content: space-between;
+}

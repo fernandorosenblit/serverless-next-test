@@ -1,11 +1,12 @@
 import httpClient from "httpClient";
 
 export default async function getLinks() {
-  const homeUrl = process.env.API_URL;
+  const homeUrl = process.env.NEXT_PUBLIC_API_URL;
 	const {
 		data: {
 			data: { links },
 		},
+		responseData: responseDataLocales
 	} = await httpClient(homeUrl);
 
 	const intLink = links["en-us"];
@@ -14,7 +15,8 @@ export default async function getLinks() {
 		data: {
 			data: { links: serviceLinks },
 		},
+		responseData: responseDataLinks
   } = await httpClient(intLink);
   
-  return serviceLinks;
+  return { links: serviceLinks, responseData: [responseDataLocales, responseDataLinks] };
 }
