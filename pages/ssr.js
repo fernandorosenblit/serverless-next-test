@@ -9,7 +9,7 @@ import queryBuilder from 'utils/queryBuilder';
 import executeRequest from 'utils/executeRequest';
 import styles from "styles/Home.module.scss";
 
-function Home({ ip, geoLoc }) {
+function Home({ ip, geoLoc, links, queriesRountrip }) {
 	const movies = [];
 	const ratingTypes = [];
 	const genres = [];
@@ -37,6 +37,22 @@ function Home({ ip, geoLoc }) {
 				<List title="Rating type" data={ratingTypes} />
 				<List title="Genre" data={genres} />
 				<List title="Feature List" data={featureListAux} />
+				<div className="rountrip">
+					<div className="rountrip-titles">
+						<h4>Queries</h4>
+						<h4>Rountrip</h4>
+					</div>
+					<ul className="list">
+						{queriesRountrip?.map(({ url, time }) => (
+							<li key={url}>
+								<div className="rountrip-row">
+									<span className="rountrip-row__url">{url}</span>
+									<span>{time} miliseconds</span>
+								</div>
+							</li>
+						))}
+					</ul>
+				</div>
 				<div>
 					<h4>IP</h4>
 					<p>{ip}</p>
@@ -52,7 +68,7 @@ function Home({ ip, geoLoc }) {
 export default Home;
 
 export async function getServerSideProps(context) {
-	const links = await getLinks();
+	const { links, responseData } = await getLinks();
   const reduxStore = initializeStore()
 	const { dispatch } = reduxStore;
 
@@ -113,7 +129,7 @@ export async function getServerSideProps(context) {
 		`${links?.featureList}${featureQuery}`
 	);
 
-	await Promise.all(
+	const queriesRountrip = await Promise.all(
 		[
 			executeRequest(dispatch, links.ratingType), 
 			executeRequest(dispatch, links.genre), 
@@ -122,11 +138,15 @@ export async function getServerSideProps(context) {
 			executeRequest(dispatch, `${links?.featureList}${featureQuery}`), 
 	])
 
+	responseData.forEach(r => queriesRountrip.push(r));
+
 	return {
 		props: {
 			initialReduxState: reduxStore.getState(),
 			ip,
 			geoLoc,
+			links,
+			queriesRountrip
 		},
 	};
 }

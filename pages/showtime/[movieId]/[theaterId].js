@@ -16,7 +16,7 @@ function ShowtimePage({ Component, pageProps }) {
 export default ShowtimePage;
 
 export async function getServerSideProps({ params }) {
-  const links = await getLinks();
+  const { links } = await getLinks();
   const reduxStore = initializeStore()
   const { dispatch } = reduxStore;
 

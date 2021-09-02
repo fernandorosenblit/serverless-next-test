@@ -1,10 +1,14 @@
 import { Provider } from "react-redux";
 import { useStore } from "state/store";
 import Link from "next/link";
+import httpClient from 'httpClient';
+import apiKeyInterceptor from 'httpClient/apiKeyInterceptor';
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 
 import "styles/globals.scss";
+
+apiKeyInterceptor(httpClient);
 
 function MyApp({ Component, pageProps }) {
 	const store = useStore(pageProps.initialReduxState);
