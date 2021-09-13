@@ -15,8 +15,7 @@ const ids = [1155,1029,1130];
 const Featured = () => {
   let movies = [];
   let moviesImageContent = [];
-  const { movie, movieImageContent, featuredListItemImageContent } = useSelector(store => store.api);
-  console.log(featuredListItemImageContent);
+  const { movie, movieImageContent } = useSelector(store => store.api);
 	Object.keys(movie).forEach((key => {
     if(ids.includes(Number(key))) {
       movies.push(movie[key]);
