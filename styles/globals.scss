@@ -147,3 +147,19 @@ $gradient-featured: #000000e0, #ffffff00;
 	display: flex;
 	justify-content: space-between;
 }
+
+.bottom-bar {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  border: 1px solid;
+  padding: 0 1rem 1rem 1rem;
+
+  &__data-wrapper {
+    display: flex;
+  }
+
+  &__value-wrapper {
+    margin-right: 1rem;
+  }
+}
