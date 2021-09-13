@@ -27,6 +27,7 @@
 		"slick-carousel": "^1.8.1"
 	},
 	"devDependencies": {
+		"axios-logger": "^2.5.0",
 		"cors-anywhere": "^0.4.4",
 		"eslint": "7.32.0",
 		"eslint-config-next": "11.1.0",
