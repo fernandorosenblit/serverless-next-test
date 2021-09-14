@@ -5,14 +5,17 @@
 	"scripts": {
 		"dev": "yarn cors & next dev",
 		"build": "next build",
+		"analyze": "cross-env ANALYZE=true next build",
 		"start": "next start",
 		"lint": "next lint",
 		"deploy": "npx serverless",
 		"cors": "node tools/cors-bypass.js"
 	},
 	"dependencies": {
+		"@next/bundle-analyzer": "^11.1.2",
 		"@rootstrap/redux-tools": "^1.0.0",
 		"axios": "^0.21.1",
+		"cross-env": "^7.0.3",
 		"humps": "^2.0.1",
 		"json-api-normalizer": "^1.0.4",
 		"next": "11.1.0",
